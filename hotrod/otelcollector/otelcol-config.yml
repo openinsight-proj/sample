@@ -1,0 +1,81 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: localhost:14260
+  otlp/servicegraph: # Dummy receiver for the metrics pipeline
+    protocols:
+      grpc:
+        endpoint: localhost:12345
+
+exporters:
+  otlp:
+    endpoint: localhost:4317
+    tls:
+      insecure: true
+  logging:
+  prometheus:
+    endpoint: "otelcol:9464"
+    resource_to_telemetry_conversion:
+      enabled: true
+    enable_open_metrics: true
+  prometheus/servicegraph:
+    endpoint: localhost:9090
+    namespace: servicegraph
+
+processors:
+  batch:
+  transform:
+    metric_statements:
+      - context: metric
+        statements:
+          - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
+  filter:
+    metrics:
+      exclude:
+        match_type: strict
+        metric_names:
+          - queueSize
+  servicegraph:
+    metrics_exporter: prometheus/servicegraph
+    latency_histogram_buckets: [2ms, 4ms, 6ms, 8ms, 10ms, 50ms, 100ms, 200ms, 500ms, 800ms, 1s, 1400ms, 2s, 5s, 10s, 15s]
+    dimensions:
+      - k8s.cluster.id
+      - k8s.namespace.name
+    store:
+      ttl: 60s
+      max_items: 100000
+    # attribute values refs: go.opentelemetry.io/collector/semconv@v0.73.0/v1.13.0/generated_trace.go
+
+connectors:
+  spanmetrics:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [servicegraph, batch]
+      exporters: [otlp, logging, spanmetrics]
+    metrics:
+      receivers: [otlp, spanmetrics]
+      processors: [filter, transform, batch]
+      exporters: [prometheus, logging]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+    metrics/servicegraph:
+      receivers: [otlp/servicegraph]
+      processors: []
+      exporters: [prometheus/servicegraph]
