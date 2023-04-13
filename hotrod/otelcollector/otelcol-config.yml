@@ -12,8 +12,7 @@ receivers:
             - "https://*"
   jaeger:
     protocols:
-      grpc:
-        endpoint: localhost:14260
+      thrift_http:
   otlp/servicegraph: # Dummy receiver for the metrics pipeline
     protocols:
       grpc:
@@ -24,12 +23,16 @@ exporters:
     endpoint: localhost:4317
     tls:
       insecure: true
-  logging:
+  jaeger:
+    endpoint: localhost:14250
+    tls:
+      insecure: true
   prometheus:
-    endpoint: "otelcol:9464"
+    endpoint: localhost:9464
     resource_to_telemetry_conversion:
       enabled: true
     enable_open_metrics: true
+    logging:
   prometheus/servicegraph:
     endpoint: localhost:9090
     namespace: servicegraph
@@ -64,9 +67,9 @@ connectors:
 service:
   pipelines:
     traces:
-      receivers: [otlp]
+      receivers: [jaeger]
       processors: [servicegraph, batch]
-      exporters: [otlp, logging, spanmetrics]
+      exporters: [otlp, jaeger, logging, spanmetrics]
     metrics:
       receivers: [otlp, spanmetrics]
       processors: [filter, transform, batch]
