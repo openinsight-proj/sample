@@ -29,14 +29,14 @@ exporters:
     tls:
       insecure: true
   prometheus:
-    endpoint: localhost:9464
+    endpoint: 0.0.0.0:9464
     resource_to_telemetry_conversion:
       enabled: true
     enable_open_metrics: true
   logging:
   prometheus/servicegraph:
-    endpoint: localhost:9090
-    namespace: servicegraph
+    endpoint: 0.0.0.0:9099
+    # namespace: servicegraph
 
 processors:
   batch:

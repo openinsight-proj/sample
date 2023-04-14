@@ -32,7 +32,7 @@ services:
         limits:
           memory: 300M
     ports:
-      - "${PROMETHEUS_SERVICE_PORT}:${PROMETHEUS_SERVICE_PORT}"
+      - "9090:9090"
     networks:
       - jaeger-example
 
@@ -55,25 +55,27 @@ services:
       - "4318:4318"     # OTLP over HTTP receiver
       - "9464"          # Prometheus exporter
       - "8888"          # metrics endpoint
-      - "19090:9090"          # metrics endpoint
+      - "9099:9099"          # metrics endpoint
     depends_on:
       - jaeger
     networks:
       - jaeger-example
 
   # Grafana
-  # grafana:
-  #   image: grafana/grafana:9.4.7
-  #   container_name: grafana
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 100M
-  #   volumes:
-  #     # - ./grafana/grafana.ini:/etc/grafana/grafana.ini
-  #     - ./grafana/provisioning/:/etc/grafana/provisioning/
-  #   ports:
-  #     - "${GRAFANA_SERVICE_PORT}"
+  grafana:
+    image: grafana/grafana:9.4.7
+    container_name: grafana
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+    volumes:
+      # - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    ports:
+      - "3000:3000"
+    networks:
+      - jaeger-example
 
   hotrod:
     image: jaegertracing/example-hotrod:latest
