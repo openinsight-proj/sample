@@ -23,10 +23,10 @@ As of Jaeger v1.42.0 this application was upgraded to use OpenTelemetry SDK for 
 
 ### Run everything via `docker-compose`
 
-* Download `docker-compose.yml` from https://github.com/jaegertracing/jaeger/blob/main/examples/hotrod/docker-compose.yml
-* Run Jaeger backend and HotROD demo with `docker-compose -f path-to-yml-file up`
+* Run Prometheus, Otel Col, Grafana, Jaeger backend and HotROD demo with `docker compose up`
 * Access Jaeger UI at http://localhost:16686 and HotROD app at http://localhost:8080
-* Shutdown / cleanup with `docker-compose -f path-to-yml-file down`
+* Access Grafana UI at http://localhost:3000 and Prometheus UI at http://localhost:9090
+* Shutdown / cleanup with `docker compose down`
 
 Alternatively, you can run each component separately as described below.
 
